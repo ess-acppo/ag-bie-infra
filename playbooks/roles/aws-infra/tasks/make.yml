@@ -76,7 +76,7 @@
     wait: False
   register: agbie_elb_target_group
 
-- name: Create sg for ag-bie ELB
+- name: Create sg for agbie ELB
   ec2_group:
     name: "agbie-lb-sg-{{ VPC_ID }}"
     description: sg for agbie ELB
@@ -185,7 +185,7 @@
    user_data: |
                   #!/bin/sh
                   sudo  echo "{{ mypubkey.stdout }}" >> /home/ubuntu/.ssh/authorized_keys
-  register: ag-bie_instance
+  register: agbie_instance
 
 # Add target instance to target group
 - name: Add target instance to target group
@@ -200,9 +200,9 @@
     wait: False
     modify_targets: true
     targets:
-      - Id: "{{ ag-bie_instance.instance_ids[0] }}"
+      - Id: "{{ agbie_instance.instance_ids[0] }}"
         Port: 80
-  register: ag-bie_elb_target_group
+  register: agbie_elb_target_group
 
 # Add an alias record that points to an agbie elb
 - name: Add Route53 DNS entry for the new instance
@@ -219,9 +219,9 @@
 # Used for troubleshooting purposes
 # - name: print information about the instance
 #   debug: 
-#     var: ag-bie_elb
+#     var: agbie_elb
 
 # - name: print variable for ec2 instance
-#   command: echo "Instance-ID:{{ ag-bie_elb.dns_name }}"
+#   command: echo "Instance-ID:{{ agbie_elb.dns_name }}"
 
 
