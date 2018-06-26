@@ -1,0 +1,227 @@
+---
+# Create a subnet for bastian host
+- name: Create subnet for bastion host
+  ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ VPC_ID }}"
+    cidr: "{{ public_subnet_cidr }}"
+    az: ap-southeast-2a
+    map_public: true
+    region: ap-southeast-2
+    resource_tags:
+      Name: "Bastion host Subnet_{{ VPC_ID }}"
+  register: bastion_host_subnet
+
+- name: Create subnet for bastion host in a 2nd AZ. But this doesn't actually have a host yet. Just needed to satisfy ELB creation
+  ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ VPC_ID }}"
+    cidr: "{{ public_subnet2_cidr }}"
+    az: ap-southeast-2b
+    map_public: true
+    region: ap-southeast-2
+    resource_tags:
+      Name: "Bastion host Subnet_{{ VPC_ID }}"
+  register: bastion_host_subnet2
+
+- debug:
+    var: bastion_host_subnet.subnet.id
+
+# Creates private subnet
+- name: Create private subnet for the host
+  ec2_vpc_subnet:
+    state: present
+    vpc_id: "{{ VPC_ID }}"
+    cidr: "{{ private_subnet_cidr }}"
+    az: ap-southeast-2a
+    map_public: false
+    region: ap-southeast-2
+    resource_tags:
+      Name: "agbie_private_subnet_{{ VPC_ID }}"
+  register: agbie_private_subnet
+
+# allocated a NAT gateway for this subnet
+- name: Create new nat gateway and allocate new EIP if a nat gateway does not yet exist in the subnet.
+  ec2_vpc_nat_gateway:
+    state: present
+    subnet_id: "{{ bastion_host_subnet.subnet.id }}"
+    wait: yes
+    region: ap-southeast-2
+    if_exist_do_not_create: true
+  register: new_nat_gateway
+
+- name: Set up NAT-protected route table
+  ec2_vpc_route_table:
+    vpc_id: "{{ VPC_ID }}"
+    region: ap-southeast-2
+    tags:
+      Name: "{{ env_name }}_agbie_Internal_route_table_{{ VPC_ID }}"
+    subnets:
+      - "{{ agbie_private_subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ new_nat_gateway.nat_gateway_id }}"
+  register: nat_route_table
+
+# Create a target group with targets
+- name: Create target group to asign instance
+  elb_target_group:
+    region: ap-southeast-2
+    name: "{{ env_name }}-tg-{{ VPC_ID }}"
+    protocol: http
+    port: 80
+    healthy_threshold_count: 10
+    vpc_id: "{{ VPC_ID }}"
+    state: present
+    wait: False
+  register: agbie_elb_target_group
+
+- name: Create sg for ag-bie ELB
+  ec2_group:
+    name: "agbie-lb-sg-{{ VPC_ID }}"
+    description: sg for agbie ELB
+    vpc_id: "{{ VPC_ID }}"
+    region: ap-southeast-2
+    rules:
+# 'ports' rule keyword was introduced in version 2.4. It accepts a single port value or a list of values including ranges (from_port-to_port).
+      - proto: tcp
+        ports:
+          - 80
+          - 443
+        cidr_ip: 0.0.0.0/0
+  register: agbie_lb_sg
+
+# Create ELB  for exposing agbie to internet and attach a listener with logging enabled
+- name: Create load balancer
+  elb_application_lb:
+    region: ap-southeast-2
+    access_logs_enabled: yes
+    access_logs_s3_bucket: "nxl"
+    access_logs_s3_prefix: "{{ env_name }}-logs"
+    name: "{{ env_name }}-elb-{{ VPC_ID }}"
+    security_groups:
+      - "{{ agbie_lb_sg.group_id }}"
+    subnets:
+      - "{{ bastion_host_subnet.subnet.id }}"
+      - "{{ bastion_host_subnet2.subnet.id }}"
+    listeners:
+      - Protocol: HTTP # Required. The protocol for connections from clients to the load balancer (HTTP or HTTPS) (case-sensitive).
+        Port: 80 # Required. The port on which the load balancer is listening.
+        DefaultActions:
+          - Type: forward # Required. Only 'forward' is accepted at this time
+            TargetGroupName: "{{ agbie_elb_target_group.target_group_name }}" # Required. The name of the target group
+      - Protocol: HTTPS # Required. The protocol for connections from clients to the load balancer (HTTP or HTTPS) (case-sensitive).
+        Port: 443 # Required. The port on which the load balancer is listening.
+        # The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.
+        SslPolicy: ELBSecurityPolicy-2016-08
+        Certificates: # The ARN of the certificate (only one certficate ARN should be provided)
+          - CertificateArn: arn:aws:acm:ap-southeast-2:194924002687:certificate/6ea06ff7-f1d1-4921-b3dd-8999c69546a7
+        DefaultActions:
+          - Type: forward # Required. Only 'forward' is accepted at this time
+            TargetGroupName: "{{ agbie_elb_target_group.target_group_name }}"# Required. The name of the target group
+    state: present
+  register: agbie_elb
+
+- name: get my public key
+  command: cat ~/.ssh/id_rsa.pub
+  register: mypubkey
+
+# Rolling ASG Updates
+
+# Below is an example of how to assign a new launch config to an ASG and terminate old instances.
+#
+# All instances in "myasg" that do not have the launch configuration named "my_new_lc" will be terminated in
+# a rolling fashion with instances using the current launch configuration, "my_new_lc".
+#
+# This could also be considered a rolling deploy of a pre-baked AMI.
+#
+# If this is a newly created group, the instances will not be replaced since all instances
+# will have the current launch configuration.
+
+# Create a security group for agbie ASG.
+- name: Create sg for agbie ASG
+  ec2_group:
+    name: "agbie-app-sg-{{ VPC_ID }}"
+    description: sg for agbie ASG
+    vpc_id: "{{ VPC_ID }}"
+    region: ap-southeast-2
+    rules:
+# 'ports' rule keyword was introduced in version 2.4. It accepts a single port value or a list of values including ranges (from_port-to_port).
+      - proto: tcp
+        ports: 80
+        group_name: "{{ agbie_lb_sg.group_id }}"
+      - proto: tcp
+        ports: 10389
+        group_name: "agbie-app-sg-{{ VPC_ID }}"
+      - proto: tcp
+        ports: 10389
+        group_name: jenkins-sg
+      - proto: tcp
+        ports: 22
+        group_name: sg-1821e461  #sg-1821e461 for Dev #sg-a947b3d0 for UAT # parameterised until cfn for bastion is working again. This not fixed in any other fashion to enforce fixing the Bastion CFN
+  register: agbie_app_sg
+
+# Create an EC2 instance for agbie
+- name: launch an agbie instance
+  ec2:
+   id: "{{ env_name }}_agbie_{{ VPC_ID }}"
+   region: ap-southeast-2
+   key_name: DAWRAWSSYD
+   group_id: "{{ agbie_app_sg.group_id }}"
+   instance_type: m4.large
+   image: "{{ ami_id | default('ami-6c24d20e') }}"
+   wait: yes
+   wait_timeout: 500
+   count: 1
+   instance_tags:
+      Name: "{{ env_name }}_agbie_{{ VPC_ID }}"
+      env: "{{ env_name }}"
+      role: ag-bie
+      database: solr
+      app: ag-bie
+   monitoring: yes
+   vpc_subnet_id: "{{ agbie_private_subnet.subnet.id }}"
+   assign_public_ip: no
+   user_data: |
+                  #!/bin/sh
+                  sudo  echo "{{ mypubkey.stdout }}" >> /home/ubuntu/.ssh/authorized_keys
+  register: ag-bie_instance
+
+# Add target instance to target group
+- name: Add target instance to target group
+  elb_target_group:
+    region: ap-southeast-2
+    name: "{{ env_name }}-tg-{{ VPC_ID }}"
+    protocol: http
+    port: 80
+    healthy_threshold_count: 10
+    vpc_id: "{{ VPC_ID }}"
+    state: present
+    wait: False
+    modify_targets: true
+    targets:
+      - Id: "{{ ag-bie_instance.instance_ids[0] }}"
+        Port: 80
+  register: ag-bie_elb_target_group
+
+# Add an alias record that points to an agbie elb
+- name: Add Route53 DNS entry for the new instance
+  route53:
+    command: create
+    zone: oztaxa.com
+    record: "{{ env_name }}.oztaxa.com"
+    type: A
+    value: "{{ agbie_elb.dns_name }}"
+    alias: True
+    alias_hosted_zone_id: "{{ agbie_elb.canonical_hosted_zone_id }}"
+
+
+# Used for troubleshooting purposes
+# - name: print information about the instance
+#   debug: 
+#     var: ag-bie_elb
+
+# - name: print variable for ec2 instance
+#   command: echo "Instance-ID:{{ ag-bie_elb.dns_name }}"
+
+
