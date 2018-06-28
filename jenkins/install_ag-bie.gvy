@@ -17,7 +17,7 @@ checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleC
 checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ag-bie-config']], submoduleCfg: [], userRemoteConfigs: [[url: '/var/lib/jenkins/nxl-private']]])
 
  dir('ag-bie/ansible'){
-     sh "export env_name=tmp2-ag-bie && echo $env_name"
+     sh "export env_name=$ENVIRONMENT_NAME && echo $env_name"
      sh "export env_name_us=$(echo $env_name |sed -e 's/-/_/g') && echo $env_name_us"
      sh "export agbie_private_dns_name=$(/var/lib/jenkins/workspace/Agbie_Install_Step1/ag-bie-infra/aws_utils/ec2.py --list |jq -r ._meta.hostvars.$env_name_us.ansible_host) && echo $agbie_private_dns_name"
 echo $TARGET_SERVER_NAME
