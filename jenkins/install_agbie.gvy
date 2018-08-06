@@ -32,7 +32,7 @@ stage("Prepare For Installation") {
             println "env_name: ${env_pub_hostname}"
             println "env_name: ${env_pvt_hostname}"
             sh 'cp ../../ag-bie-config/ag-bie/agbie-inv.yml agbie-inv.yml'
-            sh "sed -ie 's/agbie_host_variable_here/${env_pvt_hostname}/g' agbie-inv.yml && sed -ie 's/agbie_servername_variable_here/${env_pub_hostname}/g' agbie-inv.yml"
+            sh "sed -ie '\'s/agbie_hostname_variable_here/${env_pvt_hostname}/g'\' agbie-inv.yml && sed -ie '\'s/agbie_servername_variable_here/${env_pub_hostname}/g'\' agbie-inv.yml"
             sh 'cat agbie-inv.yml'
         }
     }
