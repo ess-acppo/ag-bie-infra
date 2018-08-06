@@ -28,7 +28,8 @@ stage("Prepare For Installation") {
             }
             def env_name = "$ENVIRONMENT_NAME"
             def env_pub_hostname = "$env_name" + '.oztaxa.com'
-            def env_pvt_hostname = sh '$(echo aws ec2 describe-instances --filter "Name=tag:env,Values=$ENVIRONMENT_NAME" | jq -r ".Reservations[0].Instances[0].PrivateDnsName")'
+            sh 'echo $(aws ec2 describe-instances --filter "Name=tag:env,Values=$ENVIRONMENT_NAME" | jq -r ".Reservations[0].Instances[0].PrivateDnsName") > pvt-dns-name.txt'
+            def env_pvt_hostname = readFile('pvt-dns-name.txt').trim()
             println "pub_env_name: ${env_pub_hostname}"
             println "private_env_name: ${env_pvt_hostname}"
             sh 'cp ../../ag-bie-config/ag-bie/agbie-inv.yml agbie-inv.yml'
