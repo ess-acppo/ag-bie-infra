@@ -33,7 +33,7 @@ stage("Prepare For Installation") {
             def env_pub_hostname = "$env_name" + '.oztaxa.com'
             println "env_name: ${env_pub_hostname}"
             sh 'echo "Step 3"'
-            def env_pvt_hostname = sh '$(aws ec2 describe-instances --filter "Name=tag:env,Values=$ENVIRONMENT_NAME" | jq -r ".Reservations[0].Instances[0].PrivateDnsName")'
+            def env_pvt_hostname = sh 'echo $(aws ec2 describe-instances --filter "Name=tag:env,Values=$ENVIRONMENT_NAME" | jq -r ".Reservations[0].Instances[0].PrivateDnsName")'
             sh 'echo "Step 4"'
             println "env_name: ${env_pvt_hostname}"
             sh 'echo "Step 5"'
