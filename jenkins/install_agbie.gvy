@@ -32,8 +32,9 @@ stage("Prepare For Installation") {
             def env_pvt_hostname = readFile('pvt-dns-name.txt').trim()
             println "pub_env_name: ${env_pub_hostname}"
             println "private_env_name: ${env_pvt_hostname}"
+            sh 'rm -rf pvt-dns-name.txt'
             sh 'cp ../../ag-bie-config/ag-bie/agbie-inv.yml agbie-inv.yml'
-            sh "sed -ie 's/agbie_hostname_variable_here/${env_pvt_hostname}/g' agbie-inv.yml && sed -ie 's/agbie_servername_variable_here/${env_pub_hostname}/g' agbie-inv.yml"
+            sh "sed -ie 's/agbie_servername_variable_here/${env_pub_hostname}/g' agbie-inv.yml && sed -ie 's/agbie_hostname_variable_here/${env_pvt_hostname}/g' agbie-inv.yml"
             sh 'cat agbie-inv.yml'
         }
     }
