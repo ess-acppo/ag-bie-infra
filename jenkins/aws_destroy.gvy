@@ -7,6 +7,7 @@ Perquisites before this can be run in a machine ( irrespective of whether it run
 
 stage("Delete environment") {
   node {
+      sh 'touch file.txt && rm -rf *'
       checkout([$class: 'GitSCM', branches: [[name: '*/ag-master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ag-bie-infra']], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/ess-acppo/ag-bie-infra.git']]])
       
       dir('ag-bie-infra'){

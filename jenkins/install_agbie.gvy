@@ -27,9 +27,9 @@ stage("Prepare For Installation") {
             def build_env = { 
 
             }
-            def env_name=$ENVIRONMENT_NAME
-            def env_pub_hostname=${env_name} + 'oztaxa.com'
-            def env_pvt_hostname=sh '$(aws ec2 describe-instances --filter "Name=tag:env,Values=${env_name}" | jq -r ".Reservations[0].Instances[0].PrivateDnsName")'
+            def env_name = "$ENVIRONMENT_NAME"
+            def env_pub_hostname = ${env_name} + 'oztaxa.com'
+            def env_pvt_hostname = sh '$(aws ec2 describe-instances --filter "Name=tag:env,Values=${env_name}" | jq -r ".Reservations[0].Instances[0].PrivateDnsName")'
 
             sh 'cp ../../ag-bie-config/ag-bie/agbie-inv.yml agbie-inv.yml'
             println "env_name: ${env_name}"
