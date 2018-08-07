@@ -1,0 +1,66 @@
+---
+- name: update hosts file with fqdn
+  lineinfile: path=/etc/hosts line="127.0.0.1 {{ server_name }}" regexp=line="127.0.0.1 {{ server_name }}" state=present
+  # command: bash -c "sed -ie 's/^127.0.0.1/127.0.0.1 {{ server_name }}/g' /etc/hosts"
+  # become: true
+
+- name: Copy tar file to tmp directory
+  copy: src=../../../../../nxl-private/ag-bie/data-taxxas-2018-06-27_01.tar.xz dest=/tmp
+
+- name: Copy todo-final-script file to tmp directory
+  copy: src=../../../../../nxl-private/ag-bie/todo-final-automation-steps.sh dest=/tmp mode=755
+
+- name: Start jenkins service
+  service: name=jenkins state=stopped
+
+# - name: Untar the jenkins jobs file to jenkins home dir
+#   unarchive: src=../../../../../nxl-private/ag-bie/ex-jenkins-jobs.tar.gz dest=/var/lib/jenkins/jobs owner=jenkins group=jenkins mode=755
+
+# - name: Untar the jenkins plugins file to jenkins home dir
+#   unarchive: src=../../../../../nxl-private/ag-bie/ex-jenkins-plugins.tar.gz dest=/var/lib/jenkins/plugins owner=jenkins group=jenkins mode=755
+
+- name: Untar the jenkins home directory to jenkins home
+  unarchive: src=../../../../../nxl-private/ag-bie/jenkins-home.tar.gz dest=/var/lib/jenkins owner=jenkins group=jenkins mode=755
+
+- name: Run the todo script
+  command: bash -c "cd /tmp; ./todo-final-automation-steps.sh"
+  become: true
+
+- name: Copy ssl certificate to nginx conf directory and rename
+  copy: src=../../../../../nxl-private/ag-bie/pki/certificate.pem dest="/etc/nginx/ssl/{{server_name}}.self.crt" mode=644
+
+- name: Copy the key file to the nginx conf dir and rename
+  copy: src=../../../../../nxl-private/ag-bie/pki/key.pem dest="/etc/nginx/ssl/{{server_name}}.self.key" mode=400
+
+- name: Remove existing nginx configuration
+  command: bash -c "mv /etc/nginx/sites-available/{{server_name}}.conf /etc/nginx/sites-available/{{server_name}}.conf.bak"
+
+- name: Copy new nginx configuration
+  template: src=nginx-jenkins-vhost.conf.j2 dest="/etc/nginx/sites-available/{{server_name}}.conf"
+
+# - name: Download jenkins cli
+#   shell: wget http://localhost:"{{jenkins_port}}"/jnlpJars/jenkins-cli.jar
+
+# - name: Stop jenkins service
+#   service: name=jenkins state=stopped
+
+# - name: update the jenkins args in the jenkins config file
+#   lineinfile: path="/etc/default/jenkins" line='JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --prefix=$PREFIX"' regexp='^JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --prefix=$PREFIX"' state=present
+
+# - name: Change jenkins java options
+#   lineinfile: dest=/etc/default/jenkins regexp=^JENKINS_JAVA_OPTIONS= line='JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
+#   become: true
+
+# - name: create jenkins directory for basic security config
+#   file: path="/var/lib/jenkins/init.groovy.d" state=directory
+
+# - name: Modify jenkins init scripts after first start
+#   template: src=basic-security.groovy.j2 dest="/var/lib/jenkins/init.groovy.d/basic-security.groovy" owner=jenkins group=jenkins mode=644
+
+
+
+- name: restart nginx service
+  service: name=nginx state=restarted
+
+- name: Start jenkins service
+  service: name=jenkins state=started
