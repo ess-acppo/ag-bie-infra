@@ -92,23 +92,10 @@ stage("Customize ag-bie for env: $ENVIRONMENT_NAME") {
     node {
         dir('ag-bie-infra') {
             slackSend color: 'good', message: "ag-bie Customize stage Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+            sh 'cp ../ag-bie-config/ag-bie/*.* ag-bie-infra/playbooks/roles/customize/files/'
+            sh 'cp ../ag-bie-config/ag-bie/pki/* ag-bie-infra/playbooks/roles/customize/files/'
             sh 'ansible-playbook -i agbie-inv.yml playbooks/ag-bie-customize.yml'
             slackSend color: 'good', message: "ag-bie Customization Complete... Job Succeeded... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
         }
     }
 }
-
-/*
-stage("Installing ag-bie") {
-    node{
-        dir('ag-bie/ansible'){
-            sh "export env_name=$ENVIRONMENT_NAME && echo $env_name"
-            sh "export env_name_us=${echo $env_name |sed -e 's/-/_/g'} && echo $env_name_us"
-            sh "export agbie_private_dns_name=${"/var/lib/jenkins/workspace/Agbie_Install_Step1/ag-bie-infra/aws_utils/ec2.py --list |jq -r ._meta.hostvars.$env_name_us.ansible_host"} && echo $agbie_private_dns_name"
-        echo $TARGET_SERVER_NAME
-            def extra_vars = /'{"env_name":"$ENVIRONMENT_NAME","":""}'/
-            sh "ansible-playbook -vvv playbooks/infra.yml  -e $extra_vars"
-        }
-    }
-}
-*/
