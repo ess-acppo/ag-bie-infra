@@ -34,7 +34,7 @@ stage("Build war file for ag-bie env: $ENVIRONMENT_NAME") {
     }
 }
 
-stage("Prepare for installation of $ENVIRONMENT_NAME") {
+stage("Installing ag-bie for env: $ENVIRONMENT_NAME") {
     node {
         dir('ag-bie/ansible') {
             slackSend color: 'good', message: "ag-bie Prepare stage Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
