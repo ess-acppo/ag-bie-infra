@@ -51,7 +51,7 @@ stage("Prepare for installation of $ENVIRONMENT_NAME") {
             sh "sed -ie 's/agbie_hostname_variable_here/${env_pvt_hostname}/g' agbie-inv.yml"
             //sh 'cat agbie-inv.yml'
             slackSend color: 'good', message: "ag-bie Running Install Playbook ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
-            sh 'cp ../../ag-bie-config/ag-bie/ag-bie.yml.template ag-bie.yml'
+            //sh 'cp ../../ag-bie-config/ag-bie/ag-bie.yml.template ag-bie.yml'
             sh 'ansible-playbook -i agbie-inv.yml ag-bie.yml -b --skip-tags=version_check'
             slackSend color: 'good', message: "ag-bie Installation Complete ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
         }
