@@ -27,10 +27,10 @@
   become: true
 
 - name: Copy ssl certificate to nginx conf directory and rename
-  copy: src=./certificate.pem dest="/etc/nginx/ssl/{{server_name}}.self.crt" mode=644
+  copy: src=./pki/certificate.pem dest="/etc/nginx/ssl/{{server_name}}.self.crt" mode=644
 
 - name: Copy the key file to the nginx conf dir and rename
-  copy: src=./key.pem dest="/etc/nginx/ssl/{{server_name}}.self.key" mode=400
+  copy: src=./pki/key.pem dest="/etc/nginx/ssl/{{server_name}}.self.key" mode=400
 
 - name: Remove existing nginx configuration
   command: bash -c "mv /etc/nginx/sites-available/{{server_name}}.conf /etc/nginx/sites-available/{{server_name}}.conf.bak"
