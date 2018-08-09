@@ -190,7 +190,7 @@
   elb_target_group:
     region: ap-southeast-2
     name: "{{ env_name }}-tg-{{ VPC_ID }}"
-    protocol: http
+    protocol: https
     port: 443
     healthy_threshold_count: 10
     vpc_id: "{{ VPC_ID }}"
