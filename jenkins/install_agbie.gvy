@@ -64,10 +64,8 @@ stage("Uninstall ALA Jenkins for env: $ENVIRONMENT_NAME") {
     node {
         dir('ag-bie-infra') {
             slackSend color: 'good', message: "ag-bie ALA Jenkins Uninstallation Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
-            sh 'sudo systemctl stop jenkins'
-            sh 'sudo apt purge jenkins -y'
-            sh 'sudo rm -rf /var/lib/jenkins'
-            slackSend color: 'good', message: "ag-bie ALA Jenkins Uninstallation Complete... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+            sh 'echo "Uninstall will folow..."'
+            slackSend color: 'good', message: "ag-bie ALA Jenkins Uninstallation Will Follow... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
         }
     }
 }
