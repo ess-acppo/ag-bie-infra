@@ -68,8 +68,8 @@
   elb_target_group:
     region: ap-southeast-2
     name: "{{ env_name }}-tg-{{ VPC_ID }}"
-    protocol: http
-    port: 80
+    protocol: https
+    port: 443
     healthy_threshold_count: 10
     vpc_id: "{{ VPC_ID }}"
     state: present
@@ -151,14 +151,11 @@
         ports: 80
         group_name: "{{ agbie_lb_sg.group_id }}"
       - proto: tcp
-        ports: 10389
-        group_name: "agbie-app-sg-{{ VPC_ID }}"
-      - proto: tcp
-        ports: 10389
-        group_name: jenkins-sg
+        ports: 443
+        group_name: "{{ agbie_lb_sg.group_id }}"
       - proto: tcp
         ports: 22
-        group_name: sg-1821e461  #sg-1821e461 for Dev #sg-a947b3d0 for UAT # parameterised until cfn for bastion is working again. This not fixed in any other fashion to enforce fixing the Bastion CFN
+        group_name: "{{ BAS_HOST_SG }}" #sg-1821e461  #sg-1821e461 for Dev #sg-a947b3d0 for UAT # parameterised until cfn for bastion is working again. This not fixed in any other fashion to enforce fixing the Bastion CFN
   register: agbie_app_sg
 
 # Create an EC2 instance for agbie
@@ -193,7 +190,7 @@
     region: ap-southeast-2
     name: "{{ env_name }}-tg-{{ VPC_ID }}"
     protocol: http
-    port: 80
+    port: 443
     healthy_threshold_count: 10
     vpc_id: "{{ VPC_ID }}"
     state: present
@@ -201,7 +198,7 @@
     modify_targets: true
     targets:
       - Id: "{{ agbie_instance.instance_ids[0] }}"
-        Port: 80
+        Port: 443
   register: agbie_elb_target_group
 
 # Add an alias record that points to an agbie elb
