@@ -58,6 +58,20 @@ stage("Installing ag-bie for env: $ENVIRONMENT_NAME") {
     }
 }
 
+/* Delete Jenkins installed by ala playbooks and install automated version of 
+Jenkins, copy jobs and install plugins. */
+stage("Uninstall ALA Jenkins for env: $ENVIRONMENT_NAME") {
+    node {
+        dir('ag-bie-infra') {
+            slackSend color: 'good', message: "ag-bie ALA Jenkins Uninstallation Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+            sh 'sudo systemctl stop jenkins'
+            sh 'sudo apt purge jenkins -y'
+            sh 'sudo rm -rf /var/lib/jenkins'
+            slackSend color: 'good', message: "ag-bie ALA Jenkins Uninstallation Complete... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+        }
+    }
+}
+
 /*
 # Disable the ala-install jenkins playbook from ag-bie/ansible/ag-bie.yml
 # Run the below playbook to install the jenkins role and import jobs
