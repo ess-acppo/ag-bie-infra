@@ -70,11 +70,7 @@ node {
             slackSend color: 'good', message: "ag-bie Customize stage Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
             sh 'cp -r ../ag-bie-config/ag-bie/* playbooks/roles/customize/files/'
             //sh 'cp ../ag-bie-config/ag-bie/pki/* playbooks/roles/customize/files/'
-<<<<<<< HEAD
-            sh 'ansible-playbook -i ../ag-bie/ansible/agbie-inv.yml -b -u ubuntu playbooks/ag-bie-customize.yml'
-=======
-            sh 'ansible-playbook -i ../ag-bie/ansible/agbie-inv.yml playbooks/ag-bie-customize.yml'
->>>>>>> 45a6ca14a108273efd48743f2ec4ad440e0d5d9f
+            sh 'ansible-playbook -i ../ag-bie/ansible/agbie-inv.yml playbooks/ag-bie-customize.yml -b -u ubuntu'
             slackSend color: 'good', message: "ag-bie Customization Complete... Job Succeeded... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
         }
     }
