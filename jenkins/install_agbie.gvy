@@ -5,37 +5,32 @@ Perquisites before this can be run in a machine ( irrespective of whether it run
 3. Configure ssh to enable shh thorugh bastion
 4. Install and configure AWS CLI
 */
+node {
+    def git_tag_agbie_infra = '*/ag-master'
+    def git_tag_agbie = 'a1ff74ce8fdbb5b2cc3e6c3361d2c9103f85cab7'
+    def git_tag_alainstall = 'be0b2fa77f71530a040d97af134900990b5e4c3a'
+    def git_tag_nxlprivate = '*/master'
 
-
-stage("Clean ws & checkout repositories") {
-    node{
+    stage("Clean ws & checkout repositories") {
         slackSend color: 'good', message: "ag-bie Job Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
 
         sh 'touch test.file && rm -rf *'
-
-        checkout([$class: 'GitSCM', branches: [[name: '*/ag-master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ag-bie-infra']], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/ess-acppo/ag-bie-infra.git']]])
-
-        checkout([$class: 'GitSCM', branches: [[name: '*/DAWR_reskin']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ag-bie']], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/ess-acppo/ag-bie.git']]])
-
-        checkout([$class: 'GitSCM', branches: [[name: 'be0b2fa77f71530a040d97af134900990b5e4c3a']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ala-install']], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/AtlasOfLivingAustralia/ala-install.git']]])
-
-        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ag-bie-config']], submoduleCfg: [], userRemoteConfigs: [[url: '/var/lib/jenkins/nxl-private']]])
+        checkout([$class: 'GitSCM', branches: [[name: "${git_tag_agbie_infra}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ag-bie-infra']], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/ess-acppo/ag-bie-infra.git']]])
+        checkout([$class: 'GitSCM', branches: [[name: "${git_tag_agbie}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ag-bie']], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/ess-acppo/ag-bie.git']]])
+        checkout([$class: 'GitSCM', branches: [[name: "${git_tag_alainstall}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ala-install']], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/AtlasOfLivingAustralia/ala-install.git']]])
+        checkout([$class: 'GitSCM', branches: [[name: "${git_tag_nxlprivate}"]], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'ag-bie-config']], submoduleCfg: [], userRemoteConfigs: [[url: '/var/lib/jenkins/nxl-private']]])
         slackSend color: 'good', message: "ag-bie Checkout Stage complete... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
     }
-}
 
-stage("Build war file for ag-bie env: $ENVIRONMENT_NAME") {
-    node {
-        dir('ag-bie') {
-            slackSend color: 'good', message: "ag-bie Build WAR stage Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
-            sh './gradlew assemble'
-            slackSend color: 'good', message: "ag-bie WAR File Built... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
-        }
+    stage("Build war file for ag-bie env: $ENVIRONMENT_NAME") {
+            dir('ag-bie') {
+                slackSend color: 'good', message: "ag-bie Build WAR stage Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+                sh './gradlew assemble'
+                slackSend color: 'good', message: "ag-bie WAR File Built... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+            }
     }
-}
 
-stage("Installing ag-bie for env: $ENVIRONMENT_NAME") {
-    node {
+    stage("Installing ag-bie for env: $ENVIRONMENT_NAME") {
         dir('ag-bie/ansible') {
             slackSend color: 'good', message: "ag-bie Prepare stage Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
 
@@ -54,38 +49,9 @@ stage("Installing ag-bie for env: $ENVIRONMENT_NAME") {
             //sh 'cp ../../ag-bie-config/ag-bie/ag-bie.yml.template ag-bie.yml'
             sh 'ansible-playbook -i agbie-inv.yml ag-bie.yml -b -u ubuntu --skip-tags=version_check'
             slackSend color: 'good', message: "ag-bie Installation Complete ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+
         }
     }
-}
-
-/* Delete Jenkins installed by ala playbooks and install automated version of 
-Jenkins, copy jobs and install plugins. */
-stage("Uninstall ALA Jenkins for env: $ENVIRONMENT_NAME") {
-    node {
-        dir('ag-bie-infra') {
-            slackSend color: 'good', message: "ag-bie ALA Jenkins Uninstallation Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
-            sh 'echo "Uninstall will folow..."'
-            slackSend color: 'good', message: "ag-bie ALA Jenkins Uninstallation Will Follow... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
-        }
-    }
-}
-
-/*
-# Disable the ala-install jenkins playbook from ag-bie/ansible/ag-bie.yml
-# Run the below playbook to install the jenkins role and import jobs
-# Copy the defaults/main/yml from the private repository on mgmt-jenkins box
-*/
-
-stage("Install Jenkins for env: $ENVIRONMENT_NAME") {
-    node {
-        dir('ag-bie-infra') {
-            slackSend color: 'good', message: "ag-bie Jenkins Installation Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
-            sh 'cp ../ag-bie/ansible/agbie-inv.yml agbie-inv.yml'
-            sh 'ansible-playbook -i agbie-inv.yml playbooks/jenkins.yml'
-            slackSend color: 'good', message: "ag-bie Jenkins Installation Complete... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
-        }
-    }
-}
 
 /*
 # On successful completion of the playbook, we need to do the following tasks
@@ -99,15 +65,46 @@ stage("Install Jenkins for env: $ENVIRONMENT_NAME") {
 # Below playbook encompasses all the above items, however Jenkins setup wizard is still 
 # not neutralized or completed with curl. Only created the user and presents with login prompt
 */
-
-stage("Customize ag-bie for env: $ENVIRONMENT_NAME") {
-    node {
+    stage("Customize ag-bie for env: $ENVIRONMENT_NAME") {
         dir('ag-bie-infra') {
             slackSend color: 'good', message: "ag-bie Customize stage Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
             sh 'cp -r ../ag-bie-config/ag-bie/* playbooks/roles/customize/files/'
             //sh 'cp ../ag-bie-config/ag-bie/pki/* playbooks/roles/customize/files/'
-            sh 'ansible-playbook -i ../ag-bie/ansible/agbie-inv.yml playbooks/ag-bie-customize.yml'
+            sh 'ansible-playbook -i ../ag-bie/ansible/agbie-inv.yml playbooks/ag-bie-customize.yml -b -u ubuntu'
             slackSend color: 'good', message: "ag-bie Customization Complete... Job Succeeded... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
         }
     }
+
+    /* Delete Jenkins installed by ala playbooks and install automated version of 
+    Jenkins, copy jobs and install plugins. 
+    stage("Uninstall ALA Jenkins for env: $ENVIRONMENT_NAME") {
+        node {
+            dir('ag-bie-infra') {
+                slackSend color: 'good', message: "ag-bie ALA Jenkins Uninstallation Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+                sh 'echo "Uninstall will folow..."'
+                slackSend color: 'good', message: "ag-bie ALA Jenkins Uninstallation Will Follow... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+            }
+        }
+    }
+
+    /*
+    # Disable the ala-install jenkins playbook from ag-bie/ansible/ag-bie.yml
+    # Run the below playbook to install the jenkins role and import jobs
+    # Copy the defaults/main/yml from the private repository on mgmt-jenkins box
+
+
+    stage("Install Jenkins for env: $ENVIRONMENT_NAME") {
+        node {
+            dir('ag-bie-infra') {
+                slackSend color: 'good', message: "ag-bie Jenkins Installation Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+                sh 'cp ../ag-bie/ansible/agbie-inv.yml agbie-inv.yml'
+                sh 'ansible-playbook -i agbie-inv.yml playbooks/jenkins.yml'
+                slackSend color: 'good', message: "ag-bie Jenkins Installation Complete... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
+            }
+        }
+    }
+    */
+
+
+
 }
