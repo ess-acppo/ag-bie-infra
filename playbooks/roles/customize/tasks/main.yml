@@ -19,6 +19,9 @@
 - name: Untar the jenkins plugins file to jenkins home dir
   unarchive: src=ex-jenkins-plugins.tar.gz dest=/var/lib/jenkins/plugins owner=jenkins group=jenkins mode=755
 
+- name: Make sure folder /data/work/nsl is created with right permissions
+  file: path=/data/work/nsl state=directory owner=jenkins mode=0755
+
 # - name: Untar the jenkins home directory to jenkins home
 #   unarchive: src=../ag-bie-config/ag-bie/jenkins-home.tar.gz dest=/var/lib/jenkins owner=jenkins group=jenkins mode=755
 
