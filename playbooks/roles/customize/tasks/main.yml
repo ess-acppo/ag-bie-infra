@@ -22,6 +22,9 @@
 # - name: Untar the jenkins home directory to jenkins home
 #   unarchive: src=../ag-bie-config/ag-bie/jenkins-home.tar.gz dest=/var/lib/jenkins owner=jenkins group=jenkins mode=755
 
+- name: update the jenkins args in the jenkins config file
+  lineinfile: path="/etc/default/jenkins" line='JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --prefix=$PREFIX"' regexp='^JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --prefix=$PREFIX"' state=present
+
 - name: Run the todo script
   command: bash -c "cd /tmp; ./todo-final-automation-steps.sh"
   become: true
