@@ -25,7 +25,7 @@ node {
     stage("Build war file for ag-bie env: $ENVIRONMENT_NAME") {
             dir('ag-bie') {
                 slackSend color: 'good', message: "ag-bie Build WAR stage Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
-                sh './gradlew assemble'
+                sh './gradlew dependencies && ./gradlew assemble && find ./ -name "*.war"'
                 slackSend color: 'good', message: "ag-bie WAR File Built... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
             }
     }
