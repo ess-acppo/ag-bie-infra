@@ -31,7 +31,6 @@
 - name: Run the todo script
   command: bash -c "cd /tmp; ./todo-final-automation-steps.sh"
   become: true
-  become_user: jenkins
 
 - name: Copy ssl certificate to nginx conf directory and rename
   copy: src=./pki/certificate.pem dest="/etc/nginx/ssl/{{server_name}}.self.crt" mode=644
