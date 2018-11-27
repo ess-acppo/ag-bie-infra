@@ -8,6 +8,12 @@
 - name: Make sure folder /data/work/nsl is created with right permissions
   file: path=/data/work/nsl state=directory owner=jenkins mode=0755
 
+- name: Make sure folder /data/work/taxaas is created with right permissions
+  file: path=/data/work/taxaas state=directory owner=jenkins mode=0755
+
+- name: Make sure folder /data/work/TaxxaS is created with right permissions
+  file: path=/data/work/TaxxaS state=directory owner=jenkins mode=0755
+
 - name: update the jenkins args in the jenkins config file
   lineinfile: path="/etc/default/jenkins" line='JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --prefix=$PREFIX"' regexp='^JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --prefix=$PREFIX"' state=present
 
