@@ -8,8 +8,8 @@
 - name: Make sure folder /data/work/nsl is created with right permissions
   file: path=/data/work/nsl state=directory owner=jenkins mode=0755
 
-- name: Make sure folder /data/work/taxaas is created with right permissions
-  file: path=/data/work/taxaas state=directory owner=jenkins mode=0755
+- name: Make sure folder /data/work/taxxas is created with right permissions
+  file: path=/data/work/taxxas state=directory owner=jenkins mode=0755
 
 - name: Make sure folder /data/work/TaxxaS is created with right permissions
   file: path=/data/work/TaxxaS state=directory owner=jenkins mode=0755
@@ -21,7 +21,7 @@
   file: path=/etc/nginx/ssl state=directory owner=root mode=0755
 
 - name: Copy ssl certificate to nginx conf directory and rename
-  copy: src=./pki/certificate.pem dest="/etc/nginx/ssl/{{server_name}}.self.crt" mode=644
+  copy: src=pki/certificate.pem dest="/etc/nginx/ssl/{{server_name}}.self.crt" mode=644
 
 - name: Copy the key file to the nginx conf dir and rename
   copy: src=./pki/key.pem dest="/etc/nginx/ssl/{{server_name}}.self.key" mode=400
