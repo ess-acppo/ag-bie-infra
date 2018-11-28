@@ -14,11 +14,11 @@
 - name: Make sure folder /data/work/TaxxaS is created with right permissions
   file: path=/data/work/TaxxaS state=directory owner=jenkins group=jenkins mode=0755
 
-- name: Make sure folder /data/taxxas/config/.ssh is created with right permissions
-  file: path=/data/taxxas/config/.ssh state=directory owner=jenkins group=jenkins mode=700
+- name: Make sure folder /data/processing/config/.ssh is created with right permissions
+  file: path=/data/processing/config/.ssh state=directory owner=jenkins group=jenkins mode=700
 
 - name: Copy the key file to copy the csv file
-  copy: src=pki/dawr.pem dest="/data/taxxas/config/.ssh/dawr.pem" owner=jenkins group=jenkins mode=400
+  copy: src=pki/dawr.pem dest="/data/processing/config/.ssh/dawr.pem" owner=jenkins group=jenkins mode=400
 
 - name: update the jenkins args in the jenkins config file
   lineinfile: path="/etc/default/jenkins" line='JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --prefix=$PREFIX"' regexp='^JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --prefix=$PREFIX"' state=present
@@ -28,9 +28,11 @@
 
 - name: Copy ssl certificate to nginx conf directory and rename
   copy: src=pki/certificate.pem dest="/etc/nginx/ssl/{{server_name}}.self.crt" mode=644
+  become: true
 
 - name: Copy the key file to the nginx conf dir and rename
   copy: src=./pki/key.pem dest="/etc/nginx/ssl/{{server_name}}.self.key" mode=400
+  become: true
 
 - name: Remove existing nginx configuration
   command: bash -c "mv /etc/nginx/sites-available/{{server_name}}.conf /etc/nginx/sites-available/{{server_name}}.conf.bak"
