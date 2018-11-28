@@ -4,7 +4,10 @@
 
 - name: Stop jenkins service
   service: name=jenkins state=stopped
-  
+
+- name: Copy the key file to copy the csv file
+  copy: src=pki/dawr.pem dest="/data/taxxas/config/.ssh/dawr.pem" mode=400
+
 - name: Make sure folder /data/work/nsl is created with right permissions
   file: path=/data/work/nsl state=directory owner=jenkins mode=0755
 
