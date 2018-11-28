@@ -20,6 +20,9 @@
 - name: Ensure that /data/archive exists with right permissions
   file: path=/data/archive/ state=directory owner=jenkins group=jenkins mode=755
 
+- name: Add jenkins to tomcat group
+  user: name=jenkins groups=tomcat7
+
 - name: Copy the key file to copy the csv file
   copy: src=pki/dawr.pem dest="/data/processing/config/.ssh/dawr.pem" owner=jenkins group=jenkins mode=400
 
