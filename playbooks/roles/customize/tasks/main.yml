@@ -17,6 +17,9 @@
 - name: Make sure folder /data/processing/config/.ssh is created with right permissions
   file: path=/data/processing/config/.ssh state=directory owner=jenkins group=jenkins mode=700
 
+- name: Ensure that /data/archive exists with right permissions
+  file: path=/data/archive/ state=directory owner=jenkins group=jenkins mode=755
+
 - name: Copy the key file to copy the csv file
   copy: src=pki/dawr.pem dest="/data/processing/config/.ssh/dawr.pem" owner=jenkins group=jenkins mode=400
 
