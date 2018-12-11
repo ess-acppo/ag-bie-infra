@@ -17,6 +17,18 @@
 - name: Make sure folder /data/processing/config/.ssh is created with right permissions
   file: path=/data/processing/config/.ssh state=directory owner=jenkins group=jenkins mode=700
 
+- name: Create /data/work/NSL-ICN folder with right permissions
+  file: path=/data/work/NSL-ICN state=directory owner=jenkins group=jenkins mode=0755
+
+- name: Create /data/work/NSL-ICNP folder with right permissions
+  file: path=/data/work/NSL-ICNP state=directory owner=jenkins group=jenkins mode=0755
+
+- name: Create /data/work/NSL-ICVCN folder with right permissions
+  file: path=/data/work/NSL-ICVCN state=directory owner=jenkins group=jenkins mode=0755
+
+- name: Create /data/work/NSL-ICZN folder with right permissions
+  file: path=/data/work/NSL-ICZN state=directory owner=jenkins group=jenkins mode=0755
+
 - name: Adjust group permissions on /data/bie/import folder
   file: path=/data/bie/import state=directory mode=0775
 
