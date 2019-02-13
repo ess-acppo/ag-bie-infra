@@ -38,7 +38,8 @@ node {
             def env_pub_hostname = "$env_name" + '.oztaxa.com'
             sh 'echo $(aws ec2 describe-instances --filter "Name=tag:env,Values=$ENVIRONMENT_NAME" | jq -r ".Reservations[0].Instances[0].PrivateDnsName") > pvt-dns-name.txt'
             def env_pvt_hostname = ""
-            if ("$STANDALONE" == "True") {
+            println "Standalone Value: $STANDALONE"
+            if ("$STANDALONE") {
                 env_pvt_hostname = env_pub_hostname
             } else {
                 env_pvt_hostname = readFile('pvt-dns-name.txt').trim()
