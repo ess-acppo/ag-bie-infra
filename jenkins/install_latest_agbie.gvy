@@ -7,8 +7,8 @@ Perquisites before this can be run in a machine ( irrespective of whether it run
 */
 node {
     def git_tag_agbie_infra = '*/ag-master'
-    def git_tag_agbie = '*/DAWR_reskin'
-    def git_tag_alainstall = 'be0b2fa77f71530a040d97af134900990b5e4c3a'
+    def git_tag_agbie = '*/ag-master'
+    def git_tag_alainstall = 'ag-bie-install'
     def git_tag_nxlprivate = '*/master'
 
     stage("Clean ws & checkout repositories") {
@@ -38,7 +38,7 @@ node {
             def env_pub_hostname = "$env_name" + '.oztaxa.com'
             sh 'echo $(aws ec2 describe-instances --filter "Name=tag:env,Values=$ENVIRONMENT_NAME" | jq -r ".Reservations[0].Instances[0].PrivateDnsName") > pvt-dns-name.txt'
             def env_pvt_hostname = ""
-            if ($STANDALONE == "True") {
+            if ("$STANDALONE" == "True") {
                 env_pvt_hostname = env_pub_hostname
             } else {
                 env_pvt_hostname = readFile('pvt-dns-name.txt').trim()
