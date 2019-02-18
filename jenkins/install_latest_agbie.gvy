@@ -53,7 +53,7 @@ node {
             //sh 'cat agbie-inv.yml'
             slackSend color: 'good', message: "ag-bie Running Install Playbook ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
             //sh 'cp ../../ag-bie-config/ag-bie/ag-bie.yml.template ag-bie.yml'
-            sh 'ansible-playbook -i agbie-inv.yml ag-bie.yml -s -u ubuntu --skip-tags=version_check'
+            sh 'ansible-playbook -i agbie-inv.yml ag-bie.yml -b -u ubuntu --skip-tags=version_check'
             slackSend color: 'good', message: "ag-bie Installation Complete ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
 
         }
