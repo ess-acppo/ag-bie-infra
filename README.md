@@ -11,6 +11,7 @@ Technologies used are:
 ##### NOTE: We use a private repository for certificates, build scripts, etc hosted on our internal fileserver... If you need more information about deploying the software stack and need to know what files need to be on the fileserver, please contact us via github issue.
 
 # Manual steps in any cloud or Datacenter
+
 1. Provision a ubuntu machine possibly in AWS ( or elsewhere) ( If using Vagrant Oracle VirtualBox is used to automatically provision a VM) 
 1. Clone the following repositories in your working folder on the local machine and checkout the specific SHA of the repositories
 
