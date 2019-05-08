@@ -50,6 +50,12 @@
 - name: Ensure that /data/archive exists with right permissions
   file: path=/data/archive/ state=directory owner=jenkins group=jenkins mode=755
 
+- name: Create the Build_Solr folder in jobs in jenkins home
+  file: path=/var/lib/jenkins/jobs/Build_Solr state=directory owner=jenkins group=jenkins mode=755
+
+- name: Copy the config file to the Build_Solr directory
+  copy: src=Build_Solr_config.xml dest=/var/lib/jenkins/jobs/Build_Solr/config.xml owner=jenkins group=jenkins mode=755
+
 - name: Add jenkins to tomcat group
   user: name=jenkins groups=tomcat7
 
