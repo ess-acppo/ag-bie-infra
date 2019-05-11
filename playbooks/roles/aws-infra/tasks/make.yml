@@ -172,7 +172,7 @@
    wait_timeout: 500
    count: 1
    instance_tags:
-      Name: "{{ env_name }}_agbie_{{ VPC_ID }}"
+      Name: "{{ env_name }}_nxl_{{ VPC_ID }}"
       env: "{{ env_name }}"
       role: ag-bie
       database: solr
