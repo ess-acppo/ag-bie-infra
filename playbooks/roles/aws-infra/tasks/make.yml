@@ -162,7 +162,7 @@
 # Create an EC2 instance for agbie
 - name: launch an agbie instance
   ec2:
-   id: "{{ env_name }}_agbie_{{ VPC_ID }}"
+   id: "{{ env_name }}_nxl_{{ VPC_ID }}"
    region: ap-southeast-2
    key_name: DAWRAWSSYD
    group_id: "{{ agbie_app_sg.group_id }}"
