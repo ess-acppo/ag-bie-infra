@@ -26,7 +26,8 @@ node {
             dir('ag-bie') {
                 slackSend color: 'good', message: "ag-bie Build WAR stage Started ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
                 // sh './gradlew dependencies && ./gradlew assemble && find ./ -name "*.war"'
-                sh 'cp ~/builds/ag-bie-0.5-SNAPSHOT.war build/libs/'
+                sh 'mkdir -p build/libs/'
+                sh 'cp ~/builds/ag-bie-0.5-SNAPSHOT.war build/libs/ag-bie-0.5-SNAPSHOT.war'
                 slackSend color: 'good', message: "ag-bie WAR File Built... ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Details...>)"
             }
     }
