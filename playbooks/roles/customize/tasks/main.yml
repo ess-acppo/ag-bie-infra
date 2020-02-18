@@ -5,53 +5,31 @@
 - name: Stop jenkins service
   service: name=jenkins state=stopped
 
-- name: Make sure folder /data/work/nsl is created with right permissions
-  file: path=/data/work/nsl state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Make sure folder /data/work/taxxas is created with right permissions
-  file: path=/data/work/taxxas state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Make sure folder /data/work/TaxxaS is created with right permissions
-  file: path=/data/work/TaxxaS state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Make sure folder /data/processing/config/.ssh is created with right permissions
-  file: path=/data/processing/config/.ssh state=directory owner=jenkins group=jenkins mode=700
-
-- name: Create /data/work/NSL-ICN folder with right permissions
-  file: path=/data/work/NSL-ICN state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Create /data/work/NSL-ICNP folder with right permissions
-  file: path=/data/work/NSL-ICNP state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Create /data/work/NSL-ICVCN folder with right permissions
-  file: path=/data/work/NSL-ICVCN state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Create /data/work/NSL-ICZN folder with right permissions
-  file: path=/data/work/NSL-ICZN state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Create /data/work/ANBG-MOSS folder with right permissions
-  file: path=/data/work/ANBG-MOSS state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Create /data/work/ANBG-LICH folder with right permissions
-  file: path=/data/work/ANBG-LICH state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Create /data/work/ANBG-VASC folder with right permissions
-  file: path=/data/work/ANBG-VASC state=directory owner=jenkins group=jenkins mode=0755
-
-- name: Create /data/processing/ANBG folder with right permissions
-  file: path=/data/processing/ANBG state=directory owner=jenkins group=jenkins mode=0755
-
+- name: Create all necessary directories with right permissions
+  file: path="{{ item }}" state=directory owner=jenkins group=jenkins mode=0755
+  with_items:
+    - /data/work/nsl
+    - /data/work/taxxas
+    - /data/work/TaxaaS
+    - /data/processing/config/.ssh
+    - /data/work/NSL-ICN
+    - /data/work/NSL-ICNP
+    - /data/work/NSL-ICVCN
+    - /data/work/NSL-ICZN
+    - /data/work/ANBG-MOSS
+    - /data/work/ANBG-LICH
+    - /data/work/ANBG-VASC
+    - /data/work/ANBG-ALGAE
+    - /data/work/ANBG-FUNGI
+    - /data/processing/ANBG
+    - /data/archive
+    - /var/lib/jenkins/jobs/Build_Solr
+  
 - name: Sync the NSL processing directores with ANBG
   script: copy-nsl-files-to-anbg.sh
 
 - name: Adjust group permissions on /data/bie/import folder
   file: path=/data/bie/import state=directory mode=0775
-
-- name: Ensure that /data/archive exists with right permissions
-  file: path=/data/archive/ state=directory owner=jenkins group=jenkins mode=755
-
-- name: Create the Build_Solr folder in jobs in jenkins home
-  file: path=/var/lib/jenkins/jobs/Build_Solr state=directory owner=jenkins group=jenkins mode=755
 
 - name: Copy the config file to the Build_Solr directory
   copy: src=Build_Solr_config.xml dest=/var/lib/jenkins/jobs/Build_Solr/config.xml owner=jenkins group=jenkins mode=755
@@ -87,3 +65,6 @@
 
 - name: Restart nginx service
   service: name=nginx state=restarted
+
+- name: Restart Jenkins Service
+  command: bash -c "sudo systemctl restart jenkins"
