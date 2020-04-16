@@ -7,7 +7,7 @@ Perquisites before this can be run in a machine ( irrespective of whether it run
 */
 node {
     def git_tag_agbie_infra = '*/ag-master-idem'
-    def git_tag_agbie = '*/ag-master'
+    def git_tag_agbie = '*/bie-upgrade'
     def git_tag_alainstall = 'ag-bie-install'
     def git_tag_nxlprivate = '*/master'
 
