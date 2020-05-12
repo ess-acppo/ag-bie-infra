@@ -5,6 +5,21 @@
 - name: Stop jenkins service
   service: name=jenkins state=stopped
 
+- name: Add apt-repo
+  apt_repository: repo=ppa:deadsnakes/ppa
+
+- name: Run "apt-get update"
+  apt: update_cache=yes
+
+- name: Install software-properties-common
+  apt: name={{ item }} state=present
+  with_items:
+    - python3.7
+    - python3-pip
+
+- name: Install requests lib
+  command: pip3 install requests
+
 - name: Create all necessary directories with right permissions
   file: path="{{ item }}" state=directory owner=jenkins group=jenkins mode=0755
   with_items:
